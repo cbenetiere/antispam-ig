@@ -1,0 +1,33 @@
+name: Antispam
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: antispam
+  cancel-in-progress: false
+jobs:
+  passage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      META_TOKEN_1: ${{ secrets.META_TOKEN_1 }}
+      IG_USER_ID_1: ${{ secrets.IG_USER_ID_1 }}
+      META_TOKEN_2: ${{ secrets.META_TOKEN_2 }}
+      IG_USER_ID_2: ${{ secrets.IG_USER_ID_2 }}
+      ANTISPAM_DOMAINES: ${{ vars.ANTISPAM_DOMAINES }}
+      ANTISPAM_LECTURE_SEULE: ${{ vars.ANTISPAM_LECTURE_SEULE }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 passer.py
+      # GitHub désactive les tâches planifiées d'un dépôt public sans activité depuis 60 jours :
+      # un commit vide le 1er de chaque mois suffit à les garder actives.
+      - name: Signe de vie mensuel
+        if: github.event_name == 'schedule'
+        run: |
+          if [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 10 ]; then
+            git config user.name "antispam-bot"; git config user.email "antispam-bot@users.noreply.github.com"
+            git commit --allow-empty -m "signe de vie" && git push
+          fi
