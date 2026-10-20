@@ -1,7 +1,7 @@
 name: Antispam
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 permissions:
   contents: write
@@ -27,7 +27,7 @@ jobs:
       - name: Signe de vie mensuel
         if: github.event_name == 'schedule'
         run: |
-          if [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 10 ]; then
+          if [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 30 ]; then
             git config user.name "antispam-bot"; git config user.email "antispam-bot@users.noreply.github.com"
             git commit --allow-empty -m "signe de vie" && git push
           fi
