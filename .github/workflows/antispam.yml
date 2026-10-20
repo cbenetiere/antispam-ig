@@ -1,7 +1,7 @@
 name: Antispam
 on:
-  schedule:
-    - cron: "*/30 * * * *"
+  # Plus de déclencheur planifié : le relais Cloudflare lance ce workflow (workflow_dispatch) seulement quand le Mac de
+  # Clément est hors ligne (le Mac fait lui-même son passage toutes les 10 min).
   workflow_dispatch:
 permissions:
   contents: write
@@ -22,12 +22,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 passer.py
-      # GitHub désactive les tâches planifiées d'un dépôt public sans activité depuis 60 jours :
-      # un commit vide le 1er de chaque mois suffit à les garder actives.
-      - name: Signe de vie mensuel
-        if: github.event_name == 'schedule'
-        run: |
-          if [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 30 ]; then
-            git config user.name "antispam-bot"; git config user.email "antispam-bot@users.noreply.github.com"
-            git commit --allow-empty -m "signe de vie" && git push
-          fi
